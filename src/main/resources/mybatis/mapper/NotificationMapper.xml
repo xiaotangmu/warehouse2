@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tan.warehouse2.mapper.NotificationMapper">
+
+    <resultMap id="MyNotification" type="com.tan.warehouse2.bean.Notification">
+        <id column="ID" jdbcType="BIGINT" property="id" />
+        <!-- 类型为int closing 打不开-->
+        <!--<id column="ID" jdbcType="INT" property="id"/>-->
+        <!-- 定义普通列封装规则 -->
+        <result column="title" jdbcType="VARCHAR" property="title"/>
+        <!-- 其他不指定的列会自动封装：我们只要写resultMap就把全部的映射规则都写上。 -->
+        <result column="content" jdbcType="VARCHAR" property="content"/>
+        <result column="create_time" jdbcType="VARCHAR" property="createTime"/>
+        <result column="user_id" jdbcType="BIGINT" property="userId"/>
+        <result column="status" jdbcType="VARCHAR" property="status"/>
+    </resultMap>
+
+
+    <!--void deleteRelationByIds(@Param("ids") List<Integer> ids);-->
+    <delete id="deleteRelationByIds" parameterType="java.util.List">
+        DELETE FROM wms_user_notification WHERE noti_id IN
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!--List<Integer> findNotificationsByUserStatus(Integer userId);-->
+    <!--<select id="findNotificationsByUserStatus" parameterType="Integer" resultType="int">-->
+    <!--SELECT noti_id  FROM wms_user_notification-->
+    <!--WHERE user_id = #{userId} AND status = '1'-->
+    <!--</select>-->
+
+    <!--List<Integer> findNotificationIdByLimit(@Param("limit") String limit);-->
+    <select id="findNotificationIdByLimit" parameterType="String" resultType="int">
+        SELECT id from wms_notification
+        <where>
+            <if test="limit != null and limit == '一个月前'">
+                DATE_SUB(CURDATE(), INTERVAL 1 MONTH) > STR_TO_DATE( `create_time`,'%Y/%m/%d')
+            </if>
+            <if test="limit != null and limit == '三个月前'">
+                AND DATE_SUB(CURDATE(), INTERVAL 3 MONTH) > STR_TO_DATE( `create_time`,'%Y/%m/%d')
+            </if>
+            <if test="limit != null and limit == '半年前'">
+                AND DATE_SUB(CURDATE(), INTERVAL 6 MONTH) > STR_TO_DATE( `create_time`,'%Y/%m/%d')
+            </if>
+            <if test="limit != null and limit == '一年前'">
+                AND DATE_SUB(CURDATE(), INTERVAL 1 YEAR ) > STR_TO_DATE( `create_time`,'%Y/%m/%d')
+            </if>
+            <if test="limit != null and limit == '两年前'">
+                AND DATE_SUB(CURDATE(), INTERVAL 2 YEAR ) > STR_TO_DATE( `create_time`,'%Y/%m/%d')
+            </if>
+        </where>
+    </select>
+
+    <!--void deleteByLimit(@Param("limit") String limit);-->
+    <delete id="deleteByLimit" parameterType="String">
+        DELETE FROM wms_notification
+        <where>
+            <if test="limit != null and limit == '一个月前'">
+                DATE_SUB(CURDATE(), INTERVAL 1 MONTH) > STR_TO_DATE( `create_time`,'%Y/%m/%d')
+            </if>
+            <if test="limit != null and limit == '三个月前'">
+                AND DATE_SUB(CURDATE(), INTERVAL 3 MONTH) > STR_TO_DATE( `create_time`,'%Y/%m/%d')
+            </if>
+            <if test="limit != null and limit == '半年前'">
+                AND DATE_SUB(CURDATE(), INTERVAL 6 MONTH) > STR_TO_DATE( `create_time`,'%Y/%m/%d')
+            </if>
+            <if test="limit != null and limit == '一年前'">
+                AND DATE_SUB(CURDATE(), INTERVAL 1 YEAR ) > STR_TO_DATE( `create_time`,'%Y/%m/%d')
+            </if>
+            <if test="limit != null and limit == '两年前'">
+                AND DATE_SUB(CURDATE(), INTERVAL 2 YEAR ) > STR_TO_DATE( `create_time`,'%Y/%m/%d')
+            </if>
+        </where>
+    </delete>
+
+
+    <!--<resultMap id="BaseResultMap" type="com.meikai.shop.entity.TShopSku">-->
+        <!--<id column="id" jdbcType="BIGINT" property="id" />-->
+        <!--<result column="SKU_NAME" jdbcType="VARCHAR" property="skuName" />-->
+        <!--<result column="CATEGORY_ID" jdbcType="BIGINT" property="categoryId" />-->
+    <!--</resultMap>-->
+
+    <!--List<Notification> findNotificationsByUserId(int userId);-->
+    <select id="findNotificationsByUserId" parameterType="Integer" resultMap="MyNotification">
+      SELECT n.id, n.title, n.content, n.create_time, wun.user_id, wun.status
+      FROM wms_notification n, wms_user_notification wun
+      WHERE n.id = wun.noti_id AND wun.user_id = #{userId} AND wun.status = '0'
+      ORDER BY STR_TO_DATE( `create_time`,'%Y/%m/%d') DESC
+    </select>
+
+    <!--List<Notification> findNotificationsByUserId2(int userId);-->
+    <select id="findNotificationsByUserId2" parameterType="Integer" resultMap="MyNotification">
+        SELECT n.id, n.title, n.content, n.create_time, wun.user_id, wun.status
+        FROM wms_notification n, wms_user_notification wun
+        WHERE n.id = wun.noti_id AND wun.user_id = #{userId}
+        ORDER BY STR_TO_DATE( `create_time`,'%Y/%m/%d') DESC
+    </select>
+
+    <!--void insertNotificationToUser(Integer notiId, Set<Integer> userIds);-->
+    <insert id="insertNotificationToUser">
+        INSERT INTO wms_user_notification(noti_id, user_id, status)
+        VALUES
+        <foreach collection="userIds" item="item" separator=",">
+            (
+            #{notiId},
+            #{item},
+            '0'
+            )
+        </foreach>
+    </insert>
+
+
+    <!--void updateStatusWithUser(Set<Integer> readUserIds, int notificationId);-->
+    <update id="updateStatusWithUser">
+        <foreach collection="readUserIds" item="item" index="index" open="" close="" separator=";">
+            UPDATE wms_user_notification
+            <set>
+                status = '1'
+            </set>
+            <where>
+                user_id = #{item} AND noti_id = #{notificationId}
+            </where>
+        </foreach>
+    </update>
+
+    <!--void updateStatuWithUser(@Param("userId) Integer userId, @Param("id) Integer id);-->
+    <update id="updateStatuWithUser" parameterType="Integer">
+        UPDATE wms_user_notification
+        <set>
+            status = '1'
+        </set>
+        <where>
+            user_id = #{userId} AND noti_id = #{id}
+        </where>
+    </update>
+
+    <!--void deleteOne(Integer userId, Integer notId);-->
+    <delete id="deleteOne" parameterType="Integer">
+        DELETE FROM wms_user_notification
+        WHERE user_id = #{userId} AND noti_id = #{notId}
+    </delete>
+
+    <!--void deleteFlag(Integer userId);-->
+    <delete id="deleteFlag" parameterType="Integer">
+        DELETE FROM wms_user_notification
+        WHERE user_id = #{userId} AND status = '1'
+    </delete>
+
+    <!--void deleteAllByUserId(Integer userId);-->
+    <delete id="deleteAllByUserId" parameterType="Integer">
+        DELETE FROM wms_user_notification
+        WHERE user_id = #{userId}
+    </delete>
+
+    <!--List<Integer> findNotificationsByUserStatus(Integer userId);-->
+    <select id="findNotificationsByUserStatus" parameterType="Integer" resultType="int">
+        SELECT noti_id  FROM wms_user_notification
+        WHERE user_id = #{userId} AND status = '1'
+    </select>
+
+    <!--void deleteNotifications(Set<Integer> ids);-->
+    <delete id="deleteNotifications">
+        DELETE FROM wms_notification
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- Set<Integer> findNotiIdByUserId(Integer userId); -->
+    <select id="findNotiIdByUserId" parameterType="Integer" resultType="int">
+        SELECT noti_id FROM wms_user_notification
+        WHERE user_id = #{userId}
+    </select>
+
+    <!--void flagAll(Integer userId);-->
+    <update id="flagAll" parameterType="Integer">
+        UPDATE wms_user_notification
+        SET status = '1'
+        WHERE user_id = #{userId} AND status = '0'
+    </update>
+
+</mapper>

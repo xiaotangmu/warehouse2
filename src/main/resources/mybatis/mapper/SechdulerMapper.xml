@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tan.warehouse2.mapper.SchedulerMapper">
+
+    <resultMap id="MyScheduler" type="com.tan.warehouse2.bean.MySchedulerJob">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <!-- 类型为int closing 打不开-->
+        <!--<id column="ID" jdbcType="INT" property="id"/>-->
+        <!-- 定义普通列封装规则 -->
+        <result column="job_name" jdbcType="VARCHAR" property="jobName"/>
+        <!-- 其他不指定的列会自动封装：我们只要写resultMap就把全部的映射规则都写上。 -->
+        <result column="year" jdbcType="VARCHAR" property="year"/>
+        <result column="month" jdbcType="VARCHAR" property="month"/>
+        <result column="date" jdbcType="VARCHAR" property="date"/>
+        <result column="time" jdbcType="VARCHAR" property="time"/>
+        <result column="limit" jdbcType="VARCHAR" property="limit"/>
+        <result column="cron_str" jdbcType="VARCHAR" property="cronStr"/>
+        <result column="status" jdbcType="VARCHAR" property="status"/>
+    </resultMap>
+
+    <!--void updateScheduler(@Param("mySchedulerJob") MySchedulerJob mySchedulerJob);-->
+    <!-- limit 为特殊关键字不能直接写 加 `limit` -->
+    <update id="updateScheduler" parameterType="MySchedulerJob">
+        UPDATE sms_scheduler
+        SET `year` = #{year}, `month` = #{month}, `date` = #{date}, `time` = #{time},`limit` =  #{limit}, `status` = #{status}, `cron_str` = #{cronStr}
+        WHERE job_name = #{jobName}
+    </update>
+
+    <!--List<MySchedulerJob> getSchedulerByJobName(String jobName);-->
+    <select id="getSchedulerByJobName" parameterType="String" resultMap="MyScheduler">
+        select * from sms_scheduler
+    </select>
+
+    <select id="getAll" resultMap="MyScheduler">
+        select * from sms_scheduler
+    </select>
+
+</mapper>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tan.warehouse2.mapper.BrandMapper">
+
+    <!-- 批量删除 利用name-->
+    <delete id="deleteBrands" parameterType="java.util.List">
+        DELETE FROM bmms_brand WHERE id IN
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 模糊查询 -->
+    <select id="getBrandLikeName" parameterType="String" resultType="Brand">
+        select * from bmms_brand
+        <where>
+            <!--
+                方法一: 直接使用 % 拼接字符串
+                注意:此处不能写成  "%#{name}%" ,#{name}就成了字符串的一部分,
+                会发生这样一个异常: The error occurred while setting parameters,
+                应该写成: "%"#{name}"%",即#{name}是一个整体,前后加上%
+            -->
+            <!--<if test="name != null">-->
+                <!--name like "%"#{name}"%"-->
+            <!--</if>--> <!-- 尝试后有毛病 -->
+            <!--方法二: 使用concat(str1,str2)函数将两个参数连接 -->
+            <if test="name != null">
+                and name like concat(concat("%",#{name}),"%")
+            </if>
+            <!--方法三: 使用 bind 标签,对字符串进行绑定,然后对绑定后的字符串使用 like 关键字进行模糊查询 -->
+            <!--<if test="email != null">-->
+                <!--<bind name="pattern" value="'%'+email+'%'"/>-->
+                <!--and email like #{pattern}-->
+            <!--</if>-->
+        </where>
+    </select>
+
+</mapper>

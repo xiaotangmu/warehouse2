@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tan.warehouse2.mapper.UserMapper">
+
+    <!--void updatePhotoByName(@Param("name") String name, @Param("imgUrl") String imgUrl);-->
+    <update id="updatePhotoByName" parameterType="String">
+        UPDATE ums_user_info
+        SET photo = #{imgUrl}
+        WHERE name = #{name}
+    </update>
+
+    <!-- Set<Integer> getUserIdByAuthority(String name); -->
+    <select id="getUserIdByAuthority" parameterType="String" resultType="Integer">
+        SELECT uui.id  FROM ums_user_info uui, ums_user_role uur, ums_role_authority ura, ums_authority ua
+        WHERE uui.id = uur.user_id AND uur.role_id = ura.role_id AND ua.auth_name = #{name} AND ua.`level` = 2
+    </select>
+
+    <select id="findByName" parameterType="string" resultType="ActiveUser">
+        SELECT id,
+        name,
+        password
+        FROM
+        ums_user where name = #{value}
+    </select>
+    <select id="findById" parameterType="int" resultType="User">
+        SELECT id,
+        name,
+        password
+        FROM
+        ums_user where id = #{value}
+    </select>
+
+    <!--List<Role> getRoleByUserId(Integer id);-->
+    <select id="getRoleByUserId" resultType="Role" parameterType="Integer">
+        select r.id, r.role_name, r.description from ums_role r, ums_user_role ur
+        where r.id = ur.role_id and ur.user_id = #{id}
+    </select>
+
+    <!--void deleteUserRole(Set<Integer> set);-->
+    <delete id="deleteUserRole">
+        DELETE FROM ums_user_role WHERE user_id IN
+        <foreach collection="userIds" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!--int insertUserRole(Integer userId, Set<Integer> set);-->
+    <insert id="insertUserRole" >
+        INSERT INTO ums_user_role(user_id, role_id)
+        VALUES
+        <foreach collection="roleIds" item="item" index="index" separator=",">
+        (
+        #{userId},
+        #{item}
+        )
+        </foreach>
+    </insert>
+
+</mapper>

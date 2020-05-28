@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tan.warehouse2.mapper.CheckMapper">
+
+    <resultMap id="MySku" type="com.tan.warehouse2.bean.Sku">
+        <id column="ID" jdbcType="BIGINT" property="id" />
+        <!-- 类型为int closing 打不开-->
+        <!--<id column="ID" jdbcType="INT" property="id"/>-->
+        <!-- 定义普通列封装规则 -->
+        <result column="account_num" jdbcType="BIGINT" property="accountNum"/>
+        <!-- 其他不指定的列会自动封装：我们只要写resultMap就把全部的映射规则都写上。 -->
+        <result column="account_price" jdbcType="DECIMAL" property="accountPrice"/>
+        <result column="account_total_price" jdbcType="DECIMAL" property="accountTotalPrice"/>
+        <result column="check_num" jdbcType="BIGINT" property="checkNum"/>
+        <result column="check_total_price" jdbcType="DECIMAL" property="checkTotalPrice"/>
+        <result column="difference_num" jdbcType="DECIMAL" property="differenceNum"/>
+        <result column="difference_total_price" jdbcType="DECIMAL" property="differenceTotalPrice"/>
+        <result column="remark" jdbcType="VARCHAR" property="remark"/>
+    </resultMap>
+
+
+    <!--List<Check> getCheckByConditionForm(@Param("check") Check check, @Param("limit") String limit);-->
+    <select id="getCheckByConditionForm" resultType="Check">
+        SELECT * FROM sms_check
+        <where>
+            <if test="check.warehouseId != null and check.warehouseId > 0">
+                warehouse_Id = #{check.warehouseId}
+            </if>
+            <if test="check.checkDate != null and check.checkDate != '' and (limit == null or limit == '')">
+                AND check_date = #{check.checkDate}
+            </if>
+            <if test="limit != null and limit == '本月份'">
+                AND date_format(STR_TO_DATE( `check_date`,'%Y/%m/%d'), '%Y %m') = date_format(DATE_SUB(curdate(), INTERVAL 0 MONTH),'%Y %m')
+            </if>
+            <if test="limit != null and limit == '上一个月份'">
+                AND date_format(STR_TO_DATE( `check_date`,'%Y/%m/%d'), '%Y %m') = date_format(DATE_SUB(curdate(), INTERVAL 1 MONTH),'%Y %m')
+            </if>
+            <if test="limit != null and limit == '上第二个月份'">
+                AND date_format(STR_TO_DATE( `check_date`,'%Y/%m/%d'), '%Y %m') = date_format(DATE_SUB(curdate(), INTERVAL 2 MONTH),'%Y %m')
+            </if>
+            <if test="limit != null and limit == '上第三个月份'">
+                AND date_format(STR_TO_DATE( `check_date`,'%Y/%m/%d'), '%Y %m') = date_format(DATE_SUB(curdate(), INTERVAL 3 MONTH),'%Y %m')
+            </if>
+            <if test="limit != null and limit == '上三个月份'">
+                AND date_format(STR_TO_DATE( `check_date`,'%Y/%m/%d'), '%Y %m')
+                in
+                (
+                date_format(DATE_SUB(curdate(), INTERVAL 1 MONTH),'%Y %m'),
+                date_format(DATE_SUB(curdate(), INTERVAL 2 MONTH),'%Y %m'),
+                date_format(DATE_SUB(curdate(), INTERVAL 2 MONTH),'%Y %m')
+                )
+            </if>
+            <if test="limit != null and limit == '一个月内'">
+                AND STR_TO_DATE( `check_date`,'%Y/%m/%d') > DATE_SUB(CURDATE(), INTERVAL 1 MONTH )
+            </if>
+            <if test="limit != null and limit == '三个月内'">
+                AND STR_TO_DATE( `check_date`,'%Y/%m/%d') > DATE_SUB(CURDATE(), INTERVAL 3 MONTH )
+            </if>
+            <if test="limit != null and limit == '半年内'">
+                AND STR_TO_DATE( `check_date`,'%Y/%m/%d') > DATE_SUB(CURDATE(), INTERVAL 6 MONTH )
+            </if>
+            <if test="limit != null and limit == '一年内'">
+                AND STR_TO_DATE( `check_date`,'%Y/%m/%d') > DATE_SUB(CURDATE(), INTERVAL 1 YEAR )
+            </if>
+            <if test="limit != null and limit == '两年内'">
+                AND STR_TO_DATE( `check_date`,'%Y/%m/%d') > DATE_SUB(CURDATE(), INTERVAL 2 YEAR )
+            </if>
+        </where>
+        ORDER BY STR_TO_DATE( `check_date`,'%Y/%m/%d') DESC, id DESC
+    </select>
+
+    <!--void deleteRelationByIds(@Param("ids") List<Integer> ids);-->
+    <delete id="deleteRelationByIds" parameterType="java.util.List">
+        DELETE FROM sms_sku_check WHERE check_id IN
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!--List<Integer> findNotificationsByUserStatus(Integer userId);-->
+    <!--<select id="findNotificationsByUserStatus" parameterType="Integer" resultType="int">-->
+    <!--SELECT noti_id  FROM wms_user_notification-->
+    <!--WHERE user_id = #{userId} AND status = '1'-->
+    <!--</select>-->
+
+    <!--List<Integer> findCheckIdByLimit(@Param("limit") String limit);-->
+    <select id="findCheckIdByLimit" parameterType="String" resultType="int">
+        SELECT id from sms_check
+        <where>
+            <if test="limit != null and limit == '一个月前'">
+                DATE_SUB(CURDATE(), INTERVAL 1 MONTH) > STR_TO_DATE( `check_date`,'%Y/%m/%d')
+            </if>
+            <if test="limit != null and limit == '三个月前'">
+                AND DATE_SUB(CURDATE(), INTERVAL 3 MONTH) > STR_TO_DATE( `check_date`,'%Y/%m/%d')
+            </if>
+            <if test="limit != null and limit == '半年前'">
+                AND DATE_SUB(CURDATE(), INTERVAL 6 MONTH) > STR_TO_DATE( `check_date`,'%Y/%m/%d')
+            </if>
+            <if test="limit != null and limit == '一年前'">
+                AND DATE_SUB(CURDATE(), INTERVAL 1 YEAR ) > STR_TO_DATE( `check_date`,'%Y/%m/%d')
+            </if>
+            <if test="limit != null and limit == '两年前'">
+                AND DATE_SUB(CURDATE(), INTERVAL 2 YEAR ) > STR_TO_DATE( `check_date`,'%Y/%m/%d')
+            </if>
+        </where>
+    </select>
+
+    <!--void deleteByLimit(@Param("limit") String limit);-->
+    <delete id="deleteByLimit" parameterType="String">
+        DELETE FROM sms_check
+        <where>
+            <if test="limit != null and limit == '一个月前'">
+                DATE_SUB(CURDATE(), INTERVAL 1 MONTH) > STR_TO_DATE( `check_date`,'%Y/%m/%d')
+            </if>
+            <if test="limit != null and limit == '三个月前'">
+                AND DATE_SUB(CURDATE(), INTERVAL 3 MONTH) > STR_TO_DATE( `check_date`,'%Y/%m/%d')
+            </if>
+            <if test="limit != null and limit == '半年前'">
+                AND DATE_SUB(CURDATE(), INTERVAL 6 MONTH) > STR_TO_DATE( `check_date`,'%Y/%m/%d')
+            </if>
+            <if test="limit != null and limit == '一年前'">
+                AND DATE_SUB(CURDATE(), INTERVAL 1 YEAR ) > STR_TO_DATE( `check_date`,'%Y/%m/%d')
+            </if>
+            <if test="limit != null and limit == '两年前'">
+                AND DATE_SUB(CURDATE(), INTERVAL 2 YEAR ) > STR_TO_DATE( `check_date`,'%Y/%m/%d')
+            </if>
+        </where>
+    </delete>
+
+
+    <!--void remark(Integer checkId, Integer skuId, String remark);-->
+    <update id="remark">
+        UPDATE sms_sku_check
+        SET remark = #{remark}
+        WHERE check_id = #{checkId} AND sku_id = #{skuId}
+    </update>
+
+    <!--List<Check> getAll();-->
+    <select id="getAll" resultType="Check">
+        SELECT * FROM sms_check
+        ORDER BY STR_TO_DATE( `check_date`,'%Y/%m/%d') DESC, id DESC
+    </select>
+
+    <!--List<Check> getCheckByCondition(@Param("check") Check check);-->
+    <select id="getCheckByCondition" parameterType="Check" resultType="Check">
+        SELECT * FROM sms_check
+        <where>
+            <if test="warehouseId != null and warehouseId > 0">
+                warehouse_Id = #{warehouseId}
+            </if>
+            <if test="checkDate != null and checkDate != ''">
+                AND check_date = #{checkDate}
+            </if>
+        </where>
+        ORDER BY STR_TO_DATE( `check_date`,'%Y/%m/%d') DESC, id DESC
+    </select>
+
+    <select id="getCheckByCheckSn" parameterType="String" resultType="Check">
+        SELECT * FROM sms_check
+        WHERE check_sn = #{checkSn}
+        ORDER BY STR_TO_DATE( `check_date`,'%Y/%m/%d') DESC, id DESC
+    </select>
+
+    <!--List<Sku> getSkusById(@Param("id") Integer id);-->
+    <select id="getSkusById" parameterType="Integer" resultMap="MySku">
+        SELECT s.id, s.name, s.spu_id, s.catalog3_id,s.brand_id, s.unit,s.brand_name,s.catalog_name,
+         s.warehouse_id, s.warehouse_name, s.attr_value_str ,se.account_num, se.account_price
+         , se.account_total_price, se.check_num, se.check_total_price, se.difference_num, se.difference_price,
+         se.remark FROM sms_sku s, sms_sku_check se
+        WHERE s.id = se.sku_id AND se.check_id = #{id}
+    </select>
+
+
+    <!--int insertRelation(@Param("id") Integer id, @Param("skus") List<Sku> skus);-->
+    <insert id="insertRelation" >
+        insert into sms_sku_check(check_id, sku_id, check_num, check_total_price, difference_num,
+        difference_price, account_price, account_num, account_total_price)
+        VALUES
+        <foreach collection="skus" item="item" separator=",">
+            (
+            #{id},
+            #{item.id},
+            #{item.checkNum},
+            #{item.checkTotalPrice},
+            #{item.differenceNum},
+            #{item.differencePrice},
+            #{item.price},
+            #{item.num},
+            #{item.totalPrice}
+            )
+        </foreach>
+
+    </insert>
+
+
+</mapper>

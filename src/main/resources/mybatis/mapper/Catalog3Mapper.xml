@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tan.warehouse2.mapper.Catalog3Mapper">
+
+    <!-- 批量删除 利用name-->
+    <delete id="deleteCatalogs" parameterType="java.util.List">
+        DELETE FROM bmms_catalog3 WHERE id IN
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <insert id="insertCatalog" parameterType="Catalog">
+        INSERT INTO bmms_catalog1(name, p_id, ztree_id, catalog1_id)
+        VALUES (#{name}, #{pId}, #{ztreeId}, #{catalog1Id})
+    </insert>
+</mapper>

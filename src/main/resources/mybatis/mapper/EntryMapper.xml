@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tan.warehouse2.mapper.EntryMapper">
+
+
+
+    <!--void deleteRelationByIds(@Param("ids") List<Integer> ids);-->
+    <delete id="deleteRelationByIds" parameterType="java.util.List">
+        DELETE FROM sms_sku_entry WHERE entry_id IN
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!--List<Integer> findNotificationsByUserStatus(Integer userId);-->
+    <!--<select id="findNotificationsByUserStatus" parameterType="Integer" resultType="int">-->
+        <!--SELECT noti_id  FROM wms_user_notification-->
+        <!--WHERE user_id = #{userId} AND status = '1'-->
+    <!--</select>-->
+
+    <!--List<Integer> findEntryIdByLimit(@Param("limit") String limit);-->
+    <select id="findEntryIdByLimit" parameterType="String" resultType="int">
+        SELECT id from sms_entry
+        <where>
+            <if test="limit != null and limit == '一个月前'">
+                DATE_SUB(CURDATE(), INTERVAL 1 MONTH) > STR_TO_DATE( `entry_date`,'%Y/%m/%d')
+            </if>
+            <if test="limit != null and limit == '三个月前'">
+                AND DATE_SUB(CURDATE(), INTERVAL 3 MONTH) > STR_TO_DATE( `entry_date`,'%Y/%m/%d')
+            </if>
+            <if test="limit != null and limit == '半年前'">
+                AND DATE_SUB(CURDATE(), INTERVAL 6 MONTH) > STR_TO_DATE( `entry_date`,'%Y/%m/%d')
+            </if>
+            <if test="limit != null and limit == '一年前'">
+                AND DATE_SUB(CURDATE(), INTERVAL 1 YEAR ) > STR_TO_DATE( `entry_date`,'%Y/%m/%d')
+            </if>
+            <if test="limit != null and limit == '两年前'">
+                AND DATE_SUB(CURDATE(), INTERVAL 2 YEAR ) > STR_TO_DATE( `entry_date`,'%Y/%m/%d')
+            </if>
+        </where>
+    </select>
+
+    <!--void deleteByLimit(@Param("limit") String limit);-->
+    <delete id="deleteByLimit" parameterType="String">
+        DELETE FROM sms_entry
+        <where>
+            <if test="limit != null and limit == '一个月前'">
+                DATE_SUB(CURDATE(), INTERVAL 1 MONTH) > STR_TO_DATE( `entry_date`,'%Y/%m/%d')
+            </if>
+            <if test="limit != null and limit == '三个月前'">
+                AND DATE_SUB(CURDATE(), INTERVAL 3 MONTH) > STR_TO_DATE( `entry_date`,'%Y/%m/%d')
+            </if>
+            <if test="limit != null and limit == '半年前'">
+                AND DATE_SUB(CURDATE(), INTERVAL 6 MONTH) > STR_TO_DATE( `entry_date`,'%Y/%m/%d')
+            </if>
+            <if test="limit != null and limit == '一年前'">
+                AND DATE_SUB(CURDATE(), INTERVAL 1 YEAR ) > STR_TO_DATE( `entry_date`,'%Y/%m/%d')
+            </if>
+            <if test="limit != null and limit == '两年前'">
+                AND DATE_SUB(CURDATE(), INTERVAL 2 YEAR ) > STR_TO_DATE( `entry_date`,'%Y/%m/%d')
+            </if>
+        </where>
+    </delete>
+
+    <!--List<Entry> getAll();-->
+    <select id="getAll" resultType="Entry">
+        SELECT * FROM sms_entry
+        ORDER BY STR_TO_DATE( `entry_date`,'%Y/%m/%d') DESC, id DESC
+    </select>
+
+    <!--List<Entry> getEntryByConditionForm(@Param("entry") Entry entry, @Param("limit") String limit);-->
+    <select id="getEntryByConditionForm" resultType="Entry">
+        SELECT * FROM sms_entry
+        <where>
+            <if test="entry.warehouseId != null and entry.warehouseId > 0">
+                warehouse_Id = #{entry.warehouseId}
+            </if>
+            <if test="entry.supplierId != null and entry.supplierId > 0">
+                AND supplier_Id = #{entry.supplierId}
+            </if>
+            <if test="entry.entryDate != null and entry.entryDate != '' and (limit == null or limit == '')">
+                AND entry_date = #{entry.entryDate}
+            </if>
+            <if test="limit != null and limit == '本月份'">
+                AND date_format(STR_TO_DATE( `entry_date`,'%Y/%m/%d'), '%Y %m') = date_format(DATE_SUB(curdate(), INTERVAL 0 MONTH),'%Y %m')
+            </if>
+            <if test="limit != null and limit == '上一个月份'">
+                AND date_format(STR_TO_DATE( `entry_date`,'%Y/%m/%d'), '%Y %m') = date_format(DATE_SUB(curdate(), INTERVAL 1 MONTH),'%Y %m')
+            </if>
+            <if test="limit != null and limit == '上第二个月份'">
+                AND date_format(STR_TO_DATE( `entry_date`,'%Y/%m/%d'), '%Y %m') = date_format(DATE_SUB(curdate(), INTERVAL 2 MONTH),'%Y %m')
+            </if>
+            <if test="limit != null and limit == '上第三个月份'">
+                AND date_format(STR_TO_DATE( `entry_date`,'%Y/%m/%d'), '%Y %m') = date_format(DATE_SUB(curdate(), INTERVAL 3 MONTH),'%Y %m')
+            </if>
+            <if test="limit != null and limit == '上三个月份'">
+                AND date_format(STR_TO_DATE( `entry_date`,'%Y/%m/%d'), '%Y %m')
+                in
+                (
+                date_format(DATE_SUB(curdate(), INTERVAL 1 MONTH),'%Y %m'),
+                date_format(DATE_SUB(curdate(), INTERVAL 2 MONTH),'%Y %m'),
+                date_format(DATE_SUB(curdate(), INTERVAL 2 MONTH),'%Y %m')
+                )
+            </if>
+            <if test="limit != null and limit == '一个月内'">
+                AND STR_TO_DATE( `entry_date`,'%Y/%m/%d') > DATE_SUB(CURDATE(), INTERVAL 1 MONTH )
+            </if>
+            <if test="limit != null and limit == '三个月内'">
+                AND STR_TO_DATE( `entry_date`,'%Y/%m/%d') > DATE_SUB(CURDATE(), INTERVAL 3 MONTH )
+            </if>
+            <if test="limit != null and limit == '半年内'">
+                AND STR_TO_DATE( `entry_date`,'%Y/%m/%d') > DATE_SUB(CURDATE(), INTERVAL 6 MONTH )
+            </if>
+            <if test="limit != null and limit == '一年内'">
+                AND STR_TO_DATE( `entry_date`,'%Y/%m/%d') > DATE_SUB(CURDATE(), INTERVAL 1 YEAR )
+            </if>
+            <if test="limit != null and limit == '两年内'">
+                AND STR_TO_DATE( `entry_date`,'%Y/%m/%d') > DATE_SUB(CURDATE(), INTERVAL 2 YEAR )
+            </if>
+        </where>
+        ORDER BY STR_TO_DATE( `entry_date`,'%Y/%m/%d') DESC, id DESC
+    </select>
+
+    <!--List<Entry> getEntryByCondition(Entry entry);-->
+    <select id="getEntryByCondition" parameterType="Entry" resultType="Entry">
+        SELECT * FROM sms_entry
+        <where>
+            <if test="warehouseId != null and warehouseId > 0">
+                warehouse_Id = #{warehouseId}
+            </if>
+            <if test="supplierId != null and supplierId > 0">
+                AND supplier_Id = #{supplierId}
+            </if>
+            <if test="entryDate != null and entryDate != ''">
+                AND entry_date = #{entryDate}
+            </if>
+        </where>
+        ORDER BY STR_TO_DATE( `entry_date`,'%Y/%m/%d') DESC, id DESC
+    </select>
+
+    <select id="getEntryByEntryNum" parameterType="String" resultType="Entry">
+        SELECT * FROM sms_entry
+        WHERE entry_num = #{entryNum}
+        ORDER BY STR_TO_DATE( `entry_date`,'%Y/%m/%d') DESC
+    </select>
+
+    <!--List<Sku> getSkusById(@Param("id") Integer id);-->
+    <select id="getSkusById" parameterType="Integer" resultType="Sku">
+        SELECT s.id, s.name, s.spu_id, s.catalog3_id,s.brand_id, s.unit,s.brand_name,s.catalog_name,
+         s.warehouse_id, s.warehouse_name, s.attr_value_str ,se.num, se.price, se.total_price  FROM sms_sku s, sms_sku_entry se
+        WHERE s.id = se.sku_id AND se.entry_id = #{id}
+    </select>
+
+
+    <!--int insertRelation(@Param("id") Integer id, @Param("skus") List<Sku> skus);-->
+    <insert id="insertRelation" >
+        insert into sms_sku_entry(entry_id, sku_id, num, price, total_price)
+        VALUES
+        <foreach collection="skus" item="item" separator=",">
+            (
+            #{id},
+            #{item.id},
+            #{item.num},
+            #{item.price},
+            #{item.totalPrice}
+            )
+        </foreach>
+
+    </insert>
+
+    <!--public void deleteAuthorities(@Param("roleIds") List<Integer> roleIds);-->
+    <delete id="deleteAuthorities" parameterType="java.util.List">
+        DELETE FROM ums_role_authority WHERE role_id IN
+        <foreach collection="roleIds" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 批量删除 利用name-->
+    <delete id="deleteRoles" parameterType="java.util.List">
+        DELETE FROM ums_role WHERE id IN
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 模糊查询 -->
+    <select id="getRoleLikeName" parameterType="String" resultType="Role">
+        select * from ums_role
+        <where>
+            <!--
+                方法一: 直接使用 % 拼接字符串
+                注意:此处不能写成  "%#{name}%" ,#{name}就成了字符串的一部分,
+                会发生这样一个异常: The error occurred while setting parameters,
+                应该写成: "%"#{name}"%",即#{name}是一个整体,前后加上%
+            -->
+            <!--<if test="name != null">-->
+                <!--name like "%"#{name}"%"-->
+            <!--</if>--> <!-- 尝试后有毛病 -->
+            <!--方法二: 使用concat(str1,str2)函数将两个参数连接 -->
+            <if test="name != null">
+                and role_name like concat(concat("%",#{name}),"%")
+            </if>
+            <!--方法三: 使用 bind 标签,对字符串进行绑定,然后对绑定后的字符串使用 like 关键字进行模糊查询 -->
+            <!--<if test="email != null">-->
+                <!--<bind name="pattern" value="'%'+email+'%'"/>-->
+                <!--and email like #{pattern}-->
+            <!--</if>-->
+        </where>
+    </select>
+
+</mapper>

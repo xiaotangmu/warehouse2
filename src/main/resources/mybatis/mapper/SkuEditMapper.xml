@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tan.warehouse2.mapper.SkuEditMapper">
+
+
+    <!--void deleteRecord(String limit);-->
+    <delete id="deleteRecord" parameterType="String">
+      DELETE FROM sms_sku_edit
+        <where>
+            <if test="limit != null and limit == '一个月前'">
+                DATE_SUB(CURDATE(), INTERVAL 1 MONTH) > STR_TO_DATE( `edit_date`,'%Y/%m/%d')
+            </if>
+            <if test="limit != null and limit == '三个月前'">
+                AND DATE_SUB(CURDATE(), INTERVAL 3 MONTH) > STR_TO_DATE( `edit_date`,'%Y/%m/%d')
+            </if>
+            <if test="limit != null and limit == '半年前'">
+                AND DATE_SUB(CURDATE(), INTERVAL 6 MONTH) > STR_TO_DATE( `edit_date`,'%Y/%m/%d')
+            </if>
+            <if test="limit != null and limit == '一年前'">
+                AND DATE_SUB(CURDATE(), INTERVAL 1 YEAR ) > STR_TO_DATE( `edit_date`,'%Y/%m/%d')
+            </if>
+            <if test="limit != null and limit == '两年前'">
+                AND DATE_SUB(CURDATE(), INTERVAL 2 YEAR ) > STR_TO_DATE( `edit_date`,'%Y/%m/%d')
+            </if>
+        </where>
+    </delete>
+
+    <!--List<SkuEdit> getAllEdit();-->
+    <select id="getAllEdit" resultType="SkuEdit">
+        SELECT * FROM sms_sku_edit
+        ORDER BY STR_TO_DATE( `edit_date`,'%Y/%m/%d') DESC, id DESC
+    </select>
+
+    <!--List<SkuEdit> getSkuEditByCondition(@Param("limit") String limit, @Param("warehouseId") Integer warehouseId);-->
+    <select id="getSkuEditByCondition" resultType="SkuEdit">
+        SELECT * FROM sms_sku_edit
+        <where>
+            <if test="warehouseId != null and warehouseId > 0">
+                warehouse_Id = #{warehouseId}
+            </if>
+            <if test="limit != null and limit == '一个星期内'">
+                AND STR_TO_DATE( `edit_date`,'%Y/%m/%d') > DATE_SUB(CURDATE(), INTERVAL 1 WEEK)
+            </if>
+            <if test="limit != null and limit == '一个月内'">
+                AND STR_TO_DATE( `edit_date`,'%Y/%m/%d') > DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
+            </if>
+            <if test="limit != null and limit == '三个月内'">
+                AND STR_TO_DATE( `edit_date`,'%Y/%m/%d') > DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
+            </if>
+            <if test="limit != null and limit == '半年内'">
+                AND STR_TO_DATE( `edit_date`,'%Y/%m/%d') > DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+            </if>
+            <if test="limit != null and limit == '一年内'">
+                AND STR_TO_DATE( `edit_date`,'%Y/%m/%d') > DATE_SUB(CURDATE(), INTERVAL 1 YEAR )
+            </if>
+            <if test="limit != null and limit == '两年内'">
+                AND STR_TO_DATE( `edit_date`,'%Y/%m/%d') > DATE_SUB(CURDATE(), INTERVAL 2 YEAR )
+            </if>
+        </where>
+        ORDER BY STR_TO_DATE( `edit_date`,'%Y/%m/%d') DESC, id DESC
+    </select>
+    <!--List<SkuEdit> getSkuEditByCondition2( @Param("warehouseId") Integer warehouseId,@Param("skuEditDate") String skuEditDate);-->
+    <select id="getSkuEditByCondition2" resultType="SkuEdit">
+        SELECT * FROM sms_sku_edit
+        WHERE
+        <if test="warehouseId != null and warehouseId > 0">
+            warehouse_Id = #{warehouseId}
+        </if>
+        <if test="skuEditDate != null">
+            AND skuEditDate = #{skuEditDate}
+        </if>
+        ORDER BY STR_TO_DATE( `edit_date`,'%Y/%m/%d') DESC, id DESC
+    </select>
+
+</mapper>
