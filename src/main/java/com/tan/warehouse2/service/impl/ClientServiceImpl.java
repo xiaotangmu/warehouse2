@@ -123,7 +123,7 @@ public class ClientServiceImpl implements ClientService{
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("name", name);
         List<Client> clients = clientMapper.selectByExample(example);
-        if(clients != null || clients.size() > 0){
+        if(clients != null && clients.size() > 0){
             return clients.get(0);
         }
         return null;

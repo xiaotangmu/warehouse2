@@ -32,10 +32,12 @@ public class BaseAttrServiceImpl implements BaseAttrService{
     @Override
     public Set<BaseAttr> getAttrAndValueBySpuId(Integer spuId) {
         List<BaseAttr> baseAttrs = baseAttrMapper.getAttrBySpuId(spuId);
-        if(baseAttrs != null || baseAttrs.size() > 0){
+        if(baseAttrs != null && baseAttrs.size() > 0){
             for (BaseAttr baseAttr : baseAttrs) {
                 List<String> list = baseAttrMapper.getValueByAttrIdAndSpuId(baseAttr.getId(), spuId);
                 if(list != null){
+                    System.out.println("base value: " + list);
+
                     baseAttr.setValue(list);
                 }else{
                     baseAttr.setValue(new ArrayList<>());

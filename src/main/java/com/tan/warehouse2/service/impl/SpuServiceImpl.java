@@ -98,7 +98,7 @@ public class SpuServiceImpl implements SpuService{
 
             boolean flag = tryLock && tryLock2;
             boolean flag2 = false;
-            if(brandId != oldBrandId){
+            if(!brandId.equals(oldBrandId)){
                 lock3 = redissonClient.getLock(CACHEALLLOCK);// 声明锁
                 tryLock3 = lock2.tryLock();
                 flag = flag && tryLock3;
@@ -114,7 +114,7 @@ public class SpuServiceImpl implements SpuService{
                 spuMapper.deleteAttrValues(ids);
                 List<BaseAttr> baseAttrs = spu.getBaseAttrs();
                 List<Integer> ids2 = new ArrayList<>();
-                if(baseAttrs != null || baseAttrs.size() > 0){
+                if(baseAttrs != null && baseAttrs.size() > 0){
 
 //                        baseAttrs.forEach(item -> {
 //                            ids2.add(item.getId());
@@ -122,7 +122,8 @@ public class SpuServiceImpl implements SpuService{
                     spuMapper.insertAttr(baseAttrs,spu.getId());
                     for (BaseAttr b: baseAttrs){
                         if(b.getValue() != null && b.getValue().size() > 0){
-                            spuMapper.insertAttrValue(b.getValue(),b.getCatalog3Id(),b.getId());
+//                            public Boolean insertAttrValue(@Param("values") List<String> values, @Param("spuId") Integer spuId, @Param("attrId") Integer attrId);
+                            spuMapper.insertAttrValue(b.getValue(),spu.getId(),b.getId());
                         }
                     }
                 }
@@ -151,7 +152,7 @@ public class SpuServiceImpl implements SpuService{
                 return update(spu, oldName, oldBrandId);
             }
         }finally {
-            if(tryLock2 && lock2 != null){
+            if(tryLock2){
                 lock2.unlock();
             }
             if(tryLock3){

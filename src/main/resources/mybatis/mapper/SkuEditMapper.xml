@@ -69,7 +69,7 @@
             warehouse_Id = #{warehouseId}
         </if>
         <if test="skuEditDate != null">
-            AND skuEditDate = #{skuEditDate}
+            AND edit_date = #{skuEditDate}
         </if>
         ORDER BY STR_TO_DATE( `edit_date`,'%Y/%m/%d') DESC, id DESC
     </select>

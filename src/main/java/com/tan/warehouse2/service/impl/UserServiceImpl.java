@@ -101,7 +101,7 @@ public class UserServiceImpl implements UserService {
     public User getUserRoleAndAuthorityByName(String name) {
         User user1 = getUserAndRoleByName(name);
         List<Role> roles = user1.getRoles();
-        if(roles != null || roles.size() > 0){
+        if(roles != null && roles.size() > 0){
             for (Role role : roles) {
                 List<Authority> authorities = roleMapper.getRoleAuthorities(role.getId());
                 if(authorities == null){
@@ -136,7 +136,7 @@ public class UserServiceImpl implements UserService {
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("name", name);
         List<User> users = userMapper.selectByExample(example);
-        if(users != null || users.size() > 0){
+        if(users != null && users.size() > 0){
             return users.get(0);
         }
         return null;
@@ -149,11 +149,11 @@ public class UserServiceImpl implements UserService {
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("name", name);
         List<User> users = userMapper.selectByExample(example);
-        if(users != null || users.size() > 0){
+        if(users != null && users.size() > 0){
 
             User user = users.get(0);
             List<Role> roles = userMapper.getRoleByUserId(user.getId());
-            if(roles == null || roles.size() < 1){
+            if(roles == null && roles.size() < 1){
                 roles = new ArrayList<>();
             }
 

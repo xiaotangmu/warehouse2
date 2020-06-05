@@ -58,7 +58,7 @@ public class WarehouseController {
     }
 
     @PostMapping("/add")
-    @RequiresPermissions("warehous:add")
+    @RequiresPermissions("warehouse:add")
     public Object add(Warehouse warehouse2){//添加品牌
 
         System.out.println(warehouse2);

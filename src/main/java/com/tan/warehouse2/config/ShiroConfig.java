@@ -73,6 +73,7 @@ public class ShiroConfig {
         //无需拦截
         filterMap.put("/register", "anon");
         filterMap.put("/login", "anon");
+        filterMap.put("/user/nameCheck", "anon");
         filterMap.put("/validateCode", "anon");
         filterMap.put("/unLogin", "anon");
 

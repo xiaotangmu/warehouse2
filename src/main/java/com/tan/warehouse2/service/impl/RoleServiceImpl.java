@@ -93,7 +93,7 @@ public class RoleServiceImpl implements RoleService{
             list.add(role.getId());
 
             roleMapper.deleteAuthorities(list);
-            if(authIds != null || authIds.size() > 0){
+            if(authIds != null && authIds.size() > 0){
                 roleMapper.insertRoleAndAuthority(role.getId(),authIds);
             }
         }
@@ -139,10 +139,10 @@ public class RoleServiceImpl implements RoleService{
 
         List<Role> roles = roleMapper.getRoleLikeName(name);
 
-        if(roles != null || roles.size() > 0){
+        if(roles != null && roles.size() > 0){
             roles.forEach(item -> {
                 List<Authority> roleAuthorities = roleMapper.getRoleAuthorities(item.getId());
-                if(roleAuthorities != null || roleAuthorities.size() > 0){
+                if(roleAuthorities != null && roleAuthorities.size() > 0){
                     item.setAuthorities(roleAuthorities);
                 }else{
                     List<Authority> list = new ArrayList<>();
